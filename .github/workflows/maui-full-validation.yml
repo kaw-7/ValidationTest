@@ -14,12 +14,10 @@ jobs:
     - uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
-    - name: Restore project (skip workloads)
-      run: dotnet restore --disable-parallel
     - name: Install platform-specific workloads
-      run: dotnet workload install maui-windows --version ${{ env.WORKLOAD_VERSION }} --ignore-failed-sources
+      run: dotnet workload install maui-windows --version ${{ env.WORKLOAD_VERSION }}
     - name: Restore workloads
-      run: dotnet workload restore
+      run: dotnet restore --disable-parallel -p:CheckEagerWorkloadRegistration=false
     - name: Build Windows
       run: dotnet build -f net10.0-windows10.0.19041.0 -c Release
     - name: Upload Windows artifact
@@ -35,9 +33,6 @@ jobs:
     - uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
-    - name: Restore dependencies and workloads
-      run: |
-        dotnet restore --use-rest-source
     - name: Install platform-specific workloads
       run: |
         dotnet workload install ${{ matrix.platform }} --version ${{ env.WORKLOAD_VERSION }} --ignore-failed-sources
