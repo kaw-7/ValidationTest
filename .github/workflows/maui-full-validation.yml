@@ -59,7 +59,7 @@ jobs:
     - name: Setup Xcode
       uses: maxim-lobanov/setup-xcode@v1
       with:
-        xcode-version: '16.1.0'  # Valid version on macos-14
+        xcode-version: latest-stable  # Valid version on macos-14
     - name: Restore dependencies
       run: dotnet restore
     - name: Install and restore MAUI workloads
