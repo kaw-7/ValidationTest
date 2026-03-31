@@ -1,3 +1,11 @@
+name: MAUI Full Validation (Windows/Android/iOS/MacCatalyst/macOS)
+on: [push, pull_request]
+
+env:
+  DOTNET_VERSION: '10.0.x'
+  WORKLOAD_VERSION: '10.0.100'
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -8,19 +16,22 @@ jobs:
             tfm: net10.0-windows10.0.19041.0
             workload: maui-windows
             artifact: windows-app
+            path: bin/Release/net10.0-windows10.0.19041.0/
           - os: ubuntu-latest
             tfm: net10.0-android
             workload: maui-android
             artifact: android-apk
-            tempdir: "/home/runner/work/_temp"
+            path: bin/Release/net10.0-android/*.apk
           - os: macos-latest
             tfm: net10.0-ios
             workload: maui-ios
             artifact: ios-ipa
+            path: bin/Release/net10.0-ios/
           - os: macos-latest
             tfm: net10.0-maccatalyst
             workload: maui-maccatalyst
             artifact: maccatalyst-app
+            path: bin/Release/net10.0-maccatalyst/
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-dotnet@v4
@@ -29,7 +40,11 @@ jobs:
     - name: Restore
       run: dotnet restore
     - name: Install workload
-      run: dotnet workload install ${{ matrix.workload }} --version ${{ env.WORKLOAD_VERSION }}${{ matrix.tempdir && format('--temp-dir {0}', matrix.tempdir) || '' }} --ignore-failed-sources
+      run: |
+        dotnet workload install ${{ matrix.workload }} --version ${{ env.WORKLOAD_VERSION }} --ignore-failed-sources
+        if [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
+          dotnet workload install ${{ matrix.workload }} --temp-dir "/home/runner/work/_temp" --ignore-failed-sources
+        fi
     - name: Workload restore
       run: dotnet workload restore
     - name: Build ${{ matrix.tfm }}
@@ -38,4 +53,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.artifact }}
-        path: bin/Release/${{ matrix.tfm }}/
+        path: ${{ matrix.path }}
