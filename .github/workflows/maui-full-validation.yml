@@ -14,13 +14,12 @@ jobs:
     - uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
-    - name: Restore dependencies and workloads
-      run: |
-        dotnet restore --use-rest-source
+    - name: Restore project (skip workloads)
+      run: dotnet restore --disable-parallel
     - name: Install platform-specific workloads
-      run: |
-        dotnet workload install ${{ matrix.platform }} --version ${{ env.WORKLOAD_VERSION }} --ignore-failed-sources
-        dotnet workload restore --ignore-failed-sources
+      run: dotnet workload install maui-windows --version ${{ env.WORKLOAD_VERSION }} --ignore-failed-sources
+    - name: Restore workloads
+      run: dotnet workload restore
     - name: Build Windows
       run: dotnet build -f net10.0-windows10.0.19041.0 -c Release
     - name: Upload Windows artifact
@@ -52,29 +51,20 @@ jobs:
         path: bin/Release/net10.0-android/*.apk
 
   apple:
-    runs-on: macos-14
+    runs-on: macos-latest
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
-    - name: Restore dependencies and workloads
-      run: dotnet restore --use-rest-source
-    - name: Install and restore MAUI workloads
+    - name: Restore project
+      run: dotnet restore --disable-parallel
+    - name: Install MAUI workloads
       run: |
-        dotnet workload install ${{ matrix.platform }} --version ${{ env.WORKLOAD_VERSION }} --ignore-failed-sources
-        dotnet workload restore --ignore-failed-sources
+        dotnet workload install maui-ios maui-maccatalyst --version ${{ env.WORKLOAD_VERSION }} --ignore-failed-sources
+    - name: Restore workloads
+      run: dotnet workload restore
     - name: Build iOS
       run: dotnet build -f net10.0-ios -c Release
     - name: Build MacCatalyst
       run: dotnet build -f net10.0-maccatalyst -c Release
-    - name: Upload iOS .ipa
-      uses: actions/upload-artifact@v4
-      with:
-        name: ios-ipa
-        path: bin/Release/net10.0-ios/
-    - name: Upload MacCatalyst .app
-      uses: actions/upload-artifact@v4
-      with:
-        name: maccatalyst-app
-        path: bin/Release/net10.0-maccatalyst/
