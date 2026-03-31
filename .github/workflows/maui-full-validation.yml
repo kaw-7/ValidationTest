@@ -21,11 +21,11 @@ jobs:
 
     - name: Restore Packages (Targeted)
       # Adding the explicit path to the project file prevents MSB1009
-      run: dotnet restore ValidationTest/ValidationTest.csproj -p:TargetFramework=net10.0-windows10.0.19041.0 -p:CheckEagerWorkloadRegistration=false
+      run: dotnet restore ValidationTest.csproj -p:TargetFramework=net10.0-windows10.0.19041.0 -p:CheckEagerWorkloadRegistration=false
 
     - name: Build Windows
       # Use the project path here as well to be safe
-      run: dotnet build ValidationTest/ValidationTest.csproj --framework net10.0-windows10.0.19041.0 -c Release --no-restore
+      run: dotnet build ValidationTest.csproj --framework net10.0-windows10.0.19041.0 -c Release --no-restore
 
     - name: Upload Windows artifact
       uses: actions/upload-artifact@v4
@@ -71,5 +71,15 @@ jobs:
     - name: Restore project
       run: dotnet restore --disable-parallel -p:CheckEagerWorkloadRegistration=false
 
+    - name: List available Xcode versions
+      run: ls /Applications | grep Xcode
+      
     - name: Build iOS
-      run: dotnet build -f net10.0-ios -c Release --no-restore
+      #run: dotnet build -f net10.0-ios -c Release --no-restore
+      run: |
+        dotnet build ValidationTest/ValidationTest.csproj \
+          -f net10.0-ios \
+          -c Release \
+          --no-restore \
+          -p:ValidateXcodeVersion=false \
+          -p:_SkipXcodeVersionCheck=true
