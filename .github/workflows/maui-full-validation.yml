@@ -4,53 +4,67 @@ on: [push, pull_request]
 env:
   DOTNET_VERSION: '10.0.x'
   WORKLOAD_VERSION: '10.0.100'
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true  # Opt into Node 24 early
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-          - os: windows-latest
-            tfm: net10.0-windows10.0.19041.0
-            workload: maui-windows
-            artifact: windows-app
-            path: bin/Release/net10.0-windows10.0.19041.0/
-          - os: ubuntu-latest
-            tfm: net10.0-android
-            workload: maui-android
-            artifact: android-apk
-            path: bin/Release/net10.0-android/*.apk
-          - os: macos-latest
-            tfm: net10.0-ios
-            workload: maui-ios
-            artifact: ios-ipa
-            path: bin/Release/net10.0-ios/
-          - os: macos-latest
-            tfm: net10.0-maccatalyst
-            workload: maui-maccatalyst
-            artifact: maccatalyst-app
-            path: bin/Release/net10.0-maccatalyst/
+  windows:
+    runs-on: windows-latest
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
-    - name: Restore
-      run: dotnet restore
-    - name: Install workload
-      run: |
-        dotnet workload install ${{ matrix.workload }} --version ${{ env.WORKLOAD_VERSION }} --ignore-failed-sources
-        if [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
-          dotnet workload install ${{ matrix.workload }} --temp-dir "/home/runner/work/_temp" --ignore-failed-sources
-        fi
-    - name: Workload restore
+    - name: Restore project (skip workloads)
+      run: dotnet restore --disable-parallel
+    - name: Install platform-specific workloads
+      run: dotnet workload install maui-windows --version ${{ env.WORKLOAD_VERSION }} --ignore-failed-sources
+    - name: Restore workloads
       run: dotnet workload restore
-    - name: Build ${{ matrix.tfm }}
-      run: dotnet build -f ${{ matrix.tfm }} -c Release
-    - name: Upload ${{ matrix.artifact }}
+    - name: Build Windows
+      run: dotnet build -f net10.0-windows10.0.19041.0 -c Release
+    - name: Upload Windows artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ matrix.artifact }}
-        path: ${{ matrix.path }}
+        name: windows-app
+        path: bin/Release/net10.0-windows10.0.19041.0/
+
+  android:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+    - name: Restore dependencies and workloads
+      run: |
+        dotnet restore --use-rest-source
+    - name: Install platform-specific workloads
+      run: |
+        dotnet workload install ${{ matrix.platform }} --version ${{ env.WORKLOAD_VERSION }} --ignore-failed-sources
+        dotnet workload restore --ignore-failed-sources
+    - name: Build Android
+      run: dotnet build -f net10.0-android -c Release
+    - name: Upload Android APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: android-apk
+        path: bin/Release/net10.0-android/*.apk
+
+  apple:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+    - name: Restore project
+      run: dotnet restore --disable-parallel
+    - name: Install MAUI workloads
+      run: |
+        dotnet workload install maui-ios maui-maccatalyst --version ${{ env.WORKLOAD_VERSION }} --ignore-failed-sources
+    - name: Restore workloads
+      run: dotnet workload restore
+    - name: Build iOS
+      run: dotnet build -f net10.0-ios -c Release
+    - name: Build MacCatalyst
+      run: dotnet build -f net10.0-maccatalyst -c Release
