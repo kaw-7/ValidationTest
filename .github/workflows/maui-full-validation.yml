@@ -1,0 +1,69 @@
+name: MAUI Full Validation (Windows/Android/iOS/MacCatalyst/macOS)
+on: [push, pull_request]
+
+env:
+  DOTNET_VERSION: '10.0.x'
+  WORKLOAD_VERSION: '10.0.100'
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+    - name: Install MAUI workloads
+      run: dotnet workload install maui-windows --version ${{ env.WORKLOAD_VERSION }}
+    - name: Build Windows
+      run: dotnet build -f net10.0-windows10.0.19041.0 -c Release
+    - name: Upload Windows artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-app
+        path: bin/Release/net10.0-windows10.0.19041.0/
+
+  android:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+    - name: Install MAUI workloads
+      run: dotnet workload install maui-android --version ${{ env.WORKLOAD_VERSION }}
+    - name: Build Android
+      run: dotnet build -f net10.0-android -c Release
+    - name: Upload Android APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: android-apk
+        path: bin/Release/net10.0-android/*.apk
+
+  apple:
+    runs-on: macos-14
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '16-latest'
+    - name: Install MAUI workloads
+      run: dotnet workload install maui-ios maui-maccatalyst --version ${{ env.WORKLOAD_VERSION }}
+    - name: Build iOS
+      run: dotnet build -f net10.0-ios -c Release
+    - name: Build MacCatalyst
+      run: dotnet build -f net10.0-maccatalyst -c Release
+    - name: Upload iOS .ipa
+      uses: actions/upload-artifact@v4
+      with:
+        name: ios-ipa
+        path: bin/Release/net10.0-ios/
+    - name: Upload MacCatalyst .app
+      uses: actions/upload-artifact@v4
+      with:
+        name: maccatalyst-app
+        path: bin/Release/net10.0-maccatalyst/
