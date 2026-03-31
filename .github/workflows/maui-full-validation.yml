@@ -20,12 +20,12 @@ jobs:
       run: dotnet workload install maui-windows --version ${{ env.WORKLOAD_VERSION }} --ignore-failed-sources
 
     - name: Restore Packages (Targeted)
-      # This looks good!
-      run: dotnet restore -f net10.0-windows10.0.19041.0 -p:CheckEagerWorkloadRegistration=false
+      # Adding the explicit path to the project file prevents MSB1009
+      run: dotnet restore ValidationTest/ValidationTest.csproj --framework net10.0-windows10.0.19041.0 -p:CheckEagerWorkloadRegistration=false
 
     - name: Build Windows
-      # CRITICAL: Use --no-restore here
-      run: dotnet build -f net10.0-windows10.0.19041.0 -c Release --no-restore
+      # Use the project path here as well to be safe
+      run: dotnet build ValidationTest/ValidationTest.csproj --framework net10.0-windows10.0.19041.0 -c Release --no-restore
 
     - name: Upload Windows artifact
       uses: actions/upload-artifact@v4
