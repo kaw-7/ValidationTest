@@ -77,7 +77,7 @@ jobs:
     - name: Build iOS
       #run: dotnet build -f net10.0-ios -c Release --no-restore
       run: |
-        dotnet build ValidationTest/ValidationTest.csproj \
+        dotnet build ValidationTest.csproj \
           -f net10.0-ios \
           -c Release \
           --no-restore \
