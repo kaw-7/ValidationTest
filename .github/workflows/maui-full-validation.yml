@@ -50,7 +50,7 @@ jobs:
         path: bin/Release/net10.0-android/*.apk
 
   apple:
-    runs-on: macos-14
+    runs-on: macos-latest
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-dotnet@v4
