@@ -7,23 +7,32 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true  # Opt into Node 24 early
 
 jobs:
-  windows:
+windows:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
+
     - name: Install platform-specific workloads
-      run: dotnet workload install maui-windows --version ${{ env.WORKLOAD_VERSION }}
-    - name: Restore workloads
-      run: dotnet restore --disable-parallel -p:CheckEagerWorkloadRegistration=false
+      # Added ignore-failed-sources for stability
+      run: dotnet workload install maui-windows --version ${{ env.WORKLOAD_VERSION }} --ignore-failed-sources
+
+    - name: Restore Packages (Targeted)
+      # This looks good!
+      run: dotnet restore -f net10.0-windows10.0.19041.0 -p:CheckEagerWorkloadRegistration=false
+
     - name: Build Windows
-      run: dotnet build -f net10.0-windows10.0.19041.0 -c Release
+      # CRITICAL: Use --no-restore here
+      run: dotnet build -f net10.0-windows10.0.19041.0 -c Release --no-restore
+
     - name: Upload Windows artifact
       uses: actions/upload-artifact@v4
       with:
         name: windows-app
+        # Note: Ensure this path matches your project structure 
+        # (e.g., bin/Release/net10.0-windows10.0.19041.0/win10-x64/publish if you use publish)
         path: bin/Release/net10.0-windows10.0.19041.0/
 
   android:
