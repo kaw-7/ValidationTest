@@ -21,7 +21,7 @@ jobs:
 
     - name: Restore Packages (Targeted)
       # Adding the explicit path to the project file prevents MSB1009
-      run: dotnet restore ValidationTest/ValidationTest.csproj --framework net10.0-windows10.0.19041.0 -p:CheckEagerWorkloadRegistration=false
+      run: dotnet restore ValidationTest/ValidationTest.csproj -p:TargetFramework=net10.0-windows10.0.19041.0 -p:CheckEagerWorkloadRegistration=false
 
     - name: Build Windows
       # Use the project path here as well to be safe
