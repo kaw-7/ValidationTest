@@ -123,5 +123,6 @@ jobs:
           -r maccatalyst-arm64 \
           --no-restore \
           -p:MtouchLink=None \
+          -p:TrimMode=partial
           -p:ValidateXcodeVersion=false \
           -p:_SkipXcodeVersionCheck=true
