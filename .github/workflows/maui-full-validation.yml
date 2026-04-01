@@ -21,11 +21,18 @@ jobs:
 
     - name: Restore Packages (Targeted)
       # Adding the explicit path to the project file prevents MSB1009
-      run: dotnet restore ValidationTest.csproj -p:TargetFramework=net10.0-windows10.0.19041.0 -p:CheckEagerWorkloadRegistration=false
+      run: dotnet restore ValidationTest.csproj \
+        -p:TargetFramework=net10.0-windows10.0.19041.0 \
+        -r win-x64 \
+        -p:CheckEagerWorkloadRegistration=false
 
     - name: Build Windows
       # Use the project path here as well to be safe
-      run: dotnet build ValidationTest.csproj --framework net10.0-windows10.0.19041.0 -c Release --no-restore
+      run: dotnet build ValidationTest.csproj \
+        --framework net10.0-windows10.0.19041.0 \
+        -c Release \
+        -r win-x64 \
+        --no-restore
 
     - name: Upload Windows artifact
       uses: actions/upload-artifact@v4
@@ -79,6 +86,36 @@ jobs:
       run: |
         dotnet build ValidationTest.csproj \
           -f net10.0-ios \
+          -c Release \
+          --no-restore \
+          -p:ValidateXcodeVersion=false \
+          -p:_SkipXcodeVersionCheck=true
+          
+  maccatalyst:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    # 1. Install workloads FIRST. 
+    # Removed the explicit version as it often causes 404s on preview SDKs.
+    - name: Install MAUI workloads
+      run: dotnet workload install maui-maccatalyst --ignore-failed-sources
+
+    # 2. Restore packages while telling the SDK not to panic about missing workloads
+    - name: Restore project (Targeted)
+      #run: dotnet restore --disable-parallel -p:CheckEagerWorkloadRegistration=false
+      run: |
+        dotnet restore ValidationTest.csproj \
+          -p:TargetFramework=net10.0-maccatalyst \
+          -p:CheckEagerWorkloadRegistration=false
+      
+    - name: Build MacCatalyst
+      run: |
+        dotnet build ValidationTest.csproj \
+          -f net10.0-maccatalyst \
           -c Release \
           --no-restore \
           -p:ValidateXcodeVersion=false \
