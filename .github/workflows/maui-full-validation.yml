@@ -21,14 +21,16 @@ jobs:
 
     - name: Restore Packages (Targeted)
       # Adding the explicit path to the project file prevents MSB1009
-      run: dotnet restore ValidationTest.csproj \
+      run: |
+        dotnet restore ValidationTest.csproj \
         -p:TargetFramework=net10.0-windows10.0.19041.0 \
         -r win-x64 \
         -p:CheckEagerWorkloadRegistration=false
 
     - name: Build Windows
       # Use the project path here as well to be safe
-      run: dotnet build ValidationTest.csproj \
+      run: |
+        dotnet build ValidationTest.csproj \
         --framework net10.0-windows10.0.19041.0 \
         -c Release \
         -r win-x64 \
@@ -110,6 +112,7 @@ jobs:
       run: |
         dotnet restore ValidationTest.csproj \
           -p:TargetFramework=net10.0-maccatalyst \
+          -r maccatalyst-arm64 \
           -p:CheckEagerWorkloadRegistration=false
       
     - name: Build MacCatalyst
@@ -117,6 +120,7 @@ jobs:
         dotnet build ValidationTest.csproj \
           -f net10.0-maccatalyst \
           -c Release \
+          -r maccatalyst-arm64 \
           --no-restore \
           -p:ValidateXcodeVersion=false \
           -p:_SkipXcodeVersionCheck=true
