@@ -122,5 +122,7 @@ jobs:
           -c Release \
           -r maccatalyst-arm64 \
           --no-restore \
+          -p:PublishTrimmed=false \
+          -p:MtouchLink=None \
           -p:ValidateXcodeVersion=false \
           -p:_SkipXcodeVersionCheck=true
