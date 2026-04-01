@@ -30,6 +30,21 @@
                 SemanticProperties.Hint="Counts the number of times you click"
                 Clicked="OnCounterClicked"
                 HorizontalOptions="Fill" />
+
+			<Button
+                x:Name="FileTestBtn"
+                Text="Run File System Test"
+                Clicked="OnFileTestClicked"
+                HorizontalOptions="Fill"
+                BackgroundColor="{StaticResource Primary}" />
+
+			<Label
+				x:Name="FileContentLabel"
+				Text="File Content: (Pending)"
+				FontSize="18"
+				HorizontalOptions="Center"
+				FontAttributes="Bold"
+				TextColor="{StaticResource Secondary}" />
         </VerticalStackLayout>
     </ScrollView>
 
