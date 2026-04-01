@@ -93,6 +93,12 @@ jobs:
           -p:ValidateXcodeVersion=false \
           -p:_SkipXcodeVersionCheck=true
           
+    - name: Upload iOS Binary Artefacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: maui-ios-simulator-binary
+        path: ValidationTest/bin/Release/net10.0-ios/iossimulator-arm64/
+          
   maccatalyst:
     runs-on: macos-latest # Or macos-15/macos-26 if available
     steps:
@@ -125,5 +131,10 @@ jobs:
           -c Release \
           -r maccatalyst-arm64 \
           --no-restore 
-          # You can now remove the bypasses (-p:ValidateXcodeVersion, etc.) 
-          # because the versions will match!
+          
+    - name: Upload MacCatalyst Binary Artefacts
+      uses: actions/upload-artifact@v4
+      with:
+        # Using your accurate naming convention
+        name: maccatalyst-maui-ios-binary
+        path: ValidationTest/bin/Release/net10.0-maccatalyst/maccatalyst-arm64/
