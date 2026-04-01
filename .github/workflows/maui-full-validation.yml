@@ -97,7 +97,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: maui-ios-simulator-binary
-        path: ValidationTest/ValidationTest/bin/Release/net10.0-ios/iossimulator-arm64/
+        path: bin/Release/net10.0-ios/iossimulator-arm64/
           
   maccatalyst:
     runs-on: macos-latest # Or macos-15/macos-26 if available
