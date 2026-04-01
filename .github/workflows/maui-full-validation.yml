@@ -94,21 +94,24 @@ jobs:
           -p:_SkipXcodeVersionCheck=true
           
   maccatalyst:
-    runs-on: macos-latest
+    runs-on: macos-latest # Or macos-15/macos-26 if available
     steps:
     - uses: actions/checkout@v4
+
+    # 1. Manually select Xcode 26.2
+    - name: Set Xcode version
+      run: |
+        sudo xcode-select -s /Applications/Xcode_26.2.app/Contents/Developer
+        xcodebuild -version
+
     - uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
-    # 1. Install workloads FIRST. 
-    # Removed the explicit version as it often causes 404s on preview SDKs.
     - name: Install MAUI workloads
       run: dotnet workload install maui-maccatalyst --ignore-failed-sources
 
-    # 2. Restore packages while telling the SDK not to panic about missing workloads
     - name: Restore project (Targeted)
-      #run: dotnet restore --disable-parallel -p:CheckEagerWorkloadRegistration=false
       run: |
         dotnet restore ValidationTest.csproj \
           -p:TargetFramework=net10.0-maccatalyst \
@@ -121,8 +124,6 @@ jobs:
           -f net10.0-maccatalyst \
           -c Release \
           -r maccatalyst-arm64 \
-          --no-restore \
-          -p:MtouchLink=None \
-          -p:TrimMode=partial
-          -p:ValidateXcodeVersion=false \
-          -p:_SkipXcodeVersionCheck=true
+          --no-restore 
+          # You can now remove the bypasses (-p:ValidateXcodeVersion, etc.) 
+          # because the versions will match!
